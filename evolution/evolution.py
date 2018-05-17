@@ -26,8 +26,8 @@ class Evolution():
     def evolve(self):
         for gen in range(self.generations):
             # mutating population
-            mutations = np.random.uniform(
-                                        low=-1, high=1, 
+            mutations = np.random.normal(
+                                        loc=0, scale=1, 
                                         size=(self.pop_size, self.genes)
                                         )
                                         
