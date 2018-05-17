@@ -3,7 +3,7 @@ Training neural networks using genetic algorithms.
 
 For now, there's just one basic implementation of a genetic algorithm.
 
-## Basic Genetic Algorithms
+## Basic Genetic Algorithm
 * Every individual in the current population gets mutated using noise drawn from gaussian distribution
 * Fitness for every mutated individual is generated
 * Fitness scores are normalized to a probability distribution
