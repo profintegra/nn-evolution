@@ -9,17 +9,43 @@ from torch.utils.data import Dataset, DataLoader
 from torch.autograd import Variable
 
 class EvolutionMNIST(nn.Module):
-    def __init__(self, input_size, output_size):
+    def __init__(self, input_size, output_size, hidden_size, bias=False,
+                 activation="relu"):
         super(EvolutionMNIST, self).__init__()
         
+        # used for manual parameter update
+        self.input_size = input_size
+        self.output_size = output_size
+        self.hidden_size = hidden_size
+        self.bias = bias
+        
+        self.activations = {
+            "relu": nn.ReLU,
+            "sigmoid": nn.Sigmoid,
+            "tanh": nn.Tanh}
+        
+        try:
+            act = self.activations[activation]
+        except:
+            print("Activation function {} not supported".format(activation))
+            raise
+        
+        # function
         self.f = nn.Sequential(
-                    nn.Linear(input_size, 50), nn.ReLU(),
-                    nn.Linear(50, 50), nn.ReLU(),
-                    nn.Linear(50, output_size)
+                    nn.Linear(input_size, hidden_size, bias=bias), act(),
+                    nn.Linear(hidden_size, hidden_size, bias=bias), act(),
+                    nn.Linear(hidden_size, output_size, bias=bias)
                     )
                 
     def forward(self, x):
         return self.f(x)
+    
+    def get_parameters(self):
+        return [p.data.numpy() for p in self.parameters()]
+        #return np.concatenate([p.data.numpy() for p in self.parameters])
+        
+    def update_parameters(self, flat):
+        pass
 
 
 class GenericDataset(Dataset):
