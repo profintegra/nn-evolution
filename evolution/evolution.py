@@ -1,6 +1,6 @@
 import numpy as np
 
-class Evolution():
+class EvolutionGeneric():
     
     def __init__(self, genes, pop_size, fitness_func, lr=0.1, generations=100, 
                     base_indv=None):
