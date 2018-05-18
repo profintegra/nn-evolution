@@ -1,9 +1,9 @@
-# geNNetic
-Training neural networks using genetic algorithms.
+# nn-evolution
+Training neural networks using evolutionary algorithms.
 
-For now, there's just one basic implementation of a genetic algorithm.
+For now, there's just one basic strategy implemented.
 
-## Basic Genetic Algorithm
+## Basic Evolutionary Strategy
 * Every individual in the current population gets mutated using noise drawn from gaussian distribution
 * Fitness for every mutated individual is generated
 * Fitness scores are normalized to a probability distribution
@@ -11,7 +11,8 @@ For now, there's just one basic implementation of a genetic algorithm.
 
 ### Todo
 * Elitism
-* Breeding?
+* Crossover?
+* Deterministic ?
 
 ## Neural Network Training
 * Literally just evolving the neural network parameters
