@@ -1,4 +1,5 @@
 import numpy as np
+from torch import from_numpy
 
 class GenericEvolution():
     
@@ -65,7 +66,7 @@ class FitnessBasedSamplingEvolution():
         self.noise_mean = noise_mean
 
         self.population = None
-        self.max_fitness = -1
+        self.max_fitness = -10000
         self.best_indv = None
         
         self.base_indv = np.array([p.data.numpy() for p in model.parameters()])
@@ -76,7 +77,7 @@ class FitnessBasedSamplingEvolution():
     
     def generate_mutations(self):
         mutations = []
-        for indv in self.pop_size:
+        for indv in range(self.pop_size):
             m = []
             for shape in self.p_shapes:
                 m.append(np.random.normal(
@@ -99,19 +100,25 @@ class FitnessBasedSamplingEvolution():
             fitness_scores = []
             for indv in mutated_pop:
                 self.update_model_params(indv)
-                fitness_scores.append(self.calc_fitness())
-            fitness_scores = [self.calc_fitness() for indv in mutated_pop]
-            self.update_best(fitness_scores, mutated_population)
+                fitness_scores.append(self.calc_fitness(self.model))
+            
+            print(fitness_scores)
+            self.update_best(fitness_scores, mutated_pop)
             
             # sampling from mutation population based on fitness
-            fitness_score_prob = fitness_scores / sum(fitness_scores)
+            fitness_score_prob = np.array(fitness_scores) / sum(fitness_scores)
+            for i, (score, prob) in enumerate(zip(fitness_scores, fitness_score_prob)):
+                print("{} | {:.5f} {:.3f}".format(i, score, prob))
+                
             new_population_idx = np.random.choice(
                                             len(mutated_pop), 
                                             p=fitness_score_prob, 
                                             size=self.pop_size
                                             )
-                                                  
+            print(new_population_idx)
             self.population = mutated_pop[new_population_idx]
+            print(gen, self.max_fitness)
+            print("-----------------")
         
         self.update_model_params(self.best_indv)
 
@@ -123,4 +130,4 @@ class FitnessBasedSamplingEvolution():
     
     def update_model_params(self, indv):
         for i, p in enumerate(self.model.parameters()):
-            p.data = torch.from_numpy(indv[i])
+            p.data = from_numpy(indv[i]).float()
