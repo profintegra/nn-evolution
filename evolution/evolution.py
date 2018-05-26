@@ -1,5 +1,6 @@
 import numpy as np
 from torch import from_numpy
+import random
 import time
 
 class GenericEvolution():
@@ -161,7 +162,7 @@ class WeightMutationEvolution():
             s = time.time()
             fitness_scores = np.array([self.calc_fitness(model)
                                 for model in self.generate_models()])
-            print("Time spent calculating fitness: {:.3f}s".format(time.time() - s))
+            #print("Time spent calculating fitness: {:.3f}s".format(time.time() - s))
             print("Max Fitness Generation #{}: {}".format(i+1, max(fitness_scores)))
 
             s = time.time()
@@ -170,18 +171,26 @@ class WeightMutationEvolution():
             elitism_idx = fitness_scores.argsort()[-self.elitism_num:]
 
 
-            fitness_prob = fitness_scores / sum(fitness_scores)
-            sample_idx = np.random.choice(
+            #fitness_prob = fitness_scores / sum(fitness_scores)
+            """sample_idx = np.random.choice(
                                         len(self.population),
                                         p=fitness_prob,
                                         size=self.sample_num
                                         )
-            new_pop_idx = np.concatenate((elitism_idx, sample_idx))
-            new_pop_base = self.population[new_pop_idx]
-            print("Time spent on selection: {:.3f}s".format(time.time() - s))
+            """
+            elitists = self.population[elitism_idx]
+
+            idx_pairs = self.random_index_pairs(self.elitism_num, self.sample_num)
+            children = []
+            for pair in idx_pairs:
+                children.append(self.crossover(*list(elitists[pair])))
+
+            #new_pop_idx = np.concatenate((elitism_idx, sample_idx))
+            new_pop_base = np.concatenate((np.array(children), elitists))
+            #print("Time spent on selection: {:.3f}s".format(time.time() - s))
             s = time.time()
             self.population = self.mutate(new_pop_base)
-            print("Time spent on mutation: {:.3f}s".format(time.time() - s))
+            #print("Time spent on mutation: {:.3f}s".format(time.time() - s))
 
         print(self.fitness_history)
 
@@ -203,3 +212,21 @@ class WeightMutationEvolution():
                             ))
             mutations.append(np.array(m))
         return pop + np.array(mutations)
+
+    def crossover(self, parent1, parent2):
+        child = np.array(parent1, copy=True)
+
+        for l_idx, layer in enumerate(child):
+            for n_idx, neuron in enumerate(layer):
+                if random.getrandbits(1):
+                    child[l_idx][n_idx] = parent2[l_idx][n_idx]
+
+        return child
+
+    def random_index_pairs(self, max_idx, num_pairs):
+        pairs = []
+        while len(pairs) < num_pairs:
+            pair = set(np.random.randint(max_idx, size=2).tolist())
+            if pair not in pairs and len(pair) > 1:
+                pairs.append(list(pair))
+        return pairs
