@@ -1,5 +1,6 @@
 import numpy as np
 from torch import from_numpy
+import time
 
 class GenericEvolution():
 
@@ -147,7 +148,7 @@ class WeightMutationEvolution():
 
         self.fitness_history = []
 
-        self.max_fitness = -10000
+        self.max_fitness = -10e9
         self.best_indv = None
 
         self.base_indv = np.array([p.data.numpy() for p in model.parameters()])
@@ -157,10 +158,13 @@ class WeightMutationEvolution():
 
     def evolve(self):
         for i in range(self.generations):
+            s = time.time()
             fitness_scores = np.array([self.calc_fitness(model)
                                 for model in self.generate_models()])
-
+            print("Time spent calculating fitness: {:.3f}s".format(time.time() - s))
             print("Max Fitness Generation #{}: {}".format(i+1, max(fitness_scores)))
+
+            s = time.time()
             self.fitness_history.append(max(fitness_scores))
 
             elitism_idx = fitness_scores.argsort()[-self.elitism_num:]
@@ -172,10 +176,12 @@ class WeightMutationEvolution():
                                         p=fitness_prob,
                                         size=self.sample_num
                                         )
-
             new_pop_idx = np.concatenate((elitism_idx, sample_idx))
             new_pop_base = self.population[new_pop_idx]
+            print("Time spent on selection: {:.3f}s".format(time.time() - s))
+            s = time.time()
             self.population = self.mutate(new_pop_base)
+            print("Time spent on mutation: {:.3f}s".format(time.time() - s))
 
         print(self.fitness_history)
 
